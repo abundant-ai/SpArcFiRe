@@ -31,10 +31,14 @@ COMMAND_LINE="$0 $@"
 
 [ $# -eq 0 ] && die "Expecting at least 3 arguments"
 
+# find a tmp directory with lots of space
+TMPDIR=`df -m /tmp /scratch/ /preserve 2>/dev/null | tail -n +2 | sort -k 4nr | awk '{print $1; exit}'`
+export TMPDIR
+
 #Define custom functions for error/warning handling
 #Set matlab component cache root folder. Make sure permissions are allowed for current user (even if gsu'd in as another user).
-mkdir -p /tmp/sparcfire-${USER:=`basename $SPARCFIRE_HOME`}
-MCR_CACHE_ROOT=/tmp/sparcfire-$USER
+mkdir -p $TMPDIR/sparcfire-${USER:=`basename $SPARCFIRE_HOME`}
+MCR_CACHE_ROOT=$TMPDIR/sparcfire-$USER
 export MCR_CACHE_ROOT
 
 # SPARCFIRE_PYTHON="python2.7"
@@ -83,7 +87,7 @@ if [ $COMPUTE_STARMASK = maybe ]; then
     COMPUTE_STARMASK=true
 fi
 
-sfDir=/tmp/SF$$
+sfDir=$TMPDIR/SF$$
 trap "/bin/rm -rf $sfDir" 0 1 2 3 15
 mkdir -p $sfDir
 
